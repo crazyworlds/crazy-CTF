@@ -1,0 +1,73 @@
+version: '2'
+services:
+  webserver:
+    container_name: web-server
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    networks:
+      - ctf-public
+    ports:
+      - "1080:80"
+    restart: unless-stopped
+  webserver2:
+    container_name: web-server2
+    build:
+      context: ./web2
+      dockerfile: Dockerfile
+    networks:
+      ctf-public:            # <--- AGGIUNTO: Connesso anche alla rete pubblica
+        aliases:
+          - internal.evilcorp.org # Permette risoluzione nome all'interno della rete pubblica
+    ports:
+      - "2080:80"
+    restart: unless-stopped
+  ssh:
+    container_name: ssh
+    build:
+      context: ./ssh
+      dockerfile: Dockerfile
+    ports:
+      - "2222:22"            # SSH accessibile dalla rete pubblica dell'host
+      - "3000:3000"
+    networks:
+      ctf-public:
+        ipv4_address: 172.20.0.10 # IP sulla rete pubblica (per l'indizio)
+      ctf-private:
+        ipv4_address: 172.20.1.10 # IP sulla rete privata (per fare da ponte)
+                # Metabase accessibile dalla rete pubblica dell'host
+    restart: unless-stopped
+
+  ssh2:
+    container_name: ssh2
+    build:
+      context: ./ssh2
+      dockerfile: Dockerfile
+    networks:
+      ctf-private:           # Connesso solo alla rete privata
+        ipv4_address: 172.20.1.11 # IP sulla rete privata
+    ports:
+      - "22:22"
+    restart: unless-stopped
+    read_only: true
+    volumes:
+      - /tmp:/tmp:rw
+      - /var/tmp:/var/tmp:rw
+      - /var/log:/var/log:rw
+      - /var/run:/var/run:rw
+      - /var/spool/cron:/var/spool/cron:rw
+      - /dev/shm:/dev/shm:rw
+    depends_on:
+      ssh-target-1:
+        condition: service_started
+networks:
+  ctf-public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24 # Subnet per la rete pubblica
+  ctf-private:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24 # Subnet per la rete privata

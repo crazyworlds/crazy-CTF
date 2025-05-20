@@ -1,0 +1,4 @@
+Target SSH Server: 172.20.0.10
+Username: ctfuser
+SSH Key Filename: id_rsa
+Port: 2022
