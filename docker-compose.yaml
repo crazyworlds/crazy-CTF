@@ -6,7 +6,8 @@ services:
       context: ./web
       dockerfile: Dockerfile
     networks:
-      - ctf-public
+      ctf-public:            # Connect to the public CTF network
+        ipv4_address: ${WEB_EXTERNAL_IP} # Assign a static IP on the public network (from .env)
     ports:
       - "1080:80"
     restart: unless-stopped
@@ -16,9 +17,13 @@ services:
       context: ./web2
       dockerfile: Dockerfile
     networks:
-      ctf-public:            # <--- AGGIUNTO: Connesso anche alla rete pubblica
+      ctf-public:            # Connect to the public CTF network
+        ipv4_address: ${WEB_INTERNAL_IP} # Assign a static IP on the public network (from .env)
         aliases:
-          - internal.evilcorp.org # Permette risoluzione nome all'interno della rete pubblica
+          - internal.evilcorp.org # Allow name resolution within the public network
+      ctf-private:           # Also connect to the private CTF network
+        aliases:
+          - internal.evilcorp.org # Allow name resolution within the private network
     ports:
       - "2080:80"
     restart: unless-stopped
@@ -32,10 +37,9 @@ services:
       - "3000:3000"
     networks:
       ctf-public:
-        ipv4_address: 172.20.0.10 # IP sulla rete pubblica (per l'indizio)
+        ipv4_address: ${SSH_TARGET_1_PUBLIC_IP} # Legge l'IP dal .env
       ctf-private:
-        ipv4_address: 172.20.1.10 # IP sulla rete privata (per fare da ponte)
-                # Metabase accessibile dalla rete pubblica dell'host
+        ipv4_address: ${SSH_TARGET_1_PRIVATE_IP} # Legge l'IP dal .env
     restart: unless-stopped
 
   ssh2:
@@ -44,8 +48,8 @@ services:
       context: ./ssh2
       dockerfile: Dockerfile
     networks:
-      ctf-private:           # Connesso solo alla rete privata
-        ipv4_address: 172.20.1.11 # IP sulla rete privata
+      ctf-private:
+        ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
     ports:
       - "22:22"
     restart: unless-stopped
@@ -62,12 +66,12 @@ services:
         condition: service_started
 networks:
   ctf-public:
-    driver: bridge
+    driver: bridge             # Use a standard bridge network
     ipam:
       config:
-        - subnet: 172.20.0.0/24 # Subnet per la rete pubblica
+        - subnet: ${CTF_PUBLIC_SUBNET} # Define the subnet for the public Docker network (from .env)
   ctf-private:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.1.0/24 # Subnet per la rete privata
+        - subnet: ${CTF_PRIVATE_SUBNET} # Define the subnet for the private Docker network (from .env)

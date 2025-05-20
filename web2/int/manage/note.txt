@@ -1,4 +1,4 @@
-Target SSH Server: 172.20.0.10
-Username: ctfuser
+Target SSH Server: ${SSH_TARGET_1_PUBLIC_IP}
+Username: ${CTF_USER}
 SSH Key Filename: id_rsa
 Port: 2022
