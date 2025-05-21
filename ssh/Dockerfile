@@ -51,7 +51,7 @@ RUN mkdir -p /root/.ssh && chown root:root /root/.ssh && chmod 700 /root/.ssh
 # Add fictitious commands and the clue for ssh-target-2 (read from environment variable)
 # Note: SSH_TARGET_2_PRIVATE_IP will be passed as an ARG during build
 ARG SSH_TARGET_2_PRIVATE_IP_ARG
-ENV SSH_TARGET_2_PRIVATE_IP=${SSH_TARGET_2_PRIVATE_IP_ARG} # Mantenuto per l'uso in echo
+ENV SSH_TARGET_2_PRIVATE_IP=${SSH_TARGET_2_PRIVATE_IP_ARG} 
 
 RUN echo "cat /etc/passwd" >> /root/.bash_history
 RUN echo "ls -la /var/log/" >> /root/.bash_history
@@ -73,7 +73,7 @@ RUN chown ${CTF_USER_ARG}:${CTF_USER_ARG} /home/${CTF_USER_ARG}/.bashrc
 
 # Add the first flag (accessible as root after RCE) (read from environment variable)
 ARG FLAG_ONE_CONTENT_ARG
-ENV FLAG_ONE_CONTENT=${FLAG_ONE_CONTENT_ARG} # Mantenuto per l'uso in echo
+ENV FLAG_ONE_CONTENT=${FLAG_ONE_CONTENT_ARG} 
 RUN echo "${FLAG_ONE_CONTENT}" > /root/flag1.txt
 RUN chmod 400 /root/flag1.txt
 RUN chown root:root /root/flag1.txt
