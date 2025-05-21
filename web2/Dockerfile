@@ -5,19 +5,7 @@
     RUN apt-get update && apt-get install -y --no-install-recommends apache2
 
     # Enable Apache rewrite module
-    RUN a2enmod rewrite
-
-    # Remove default virtual host configuration
-    RUN rm /etc/apache2/sites-available/000-default.conf
-    RUN rm /etc/apache2/sites-enabled/000-default.conf
-
     # Copy our custom configuration files
-    COPY apache2.conf /etc/apache2/apache2.conf
-    COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
-
-    # Enable our virtual host
-    RUN a2ensite 000-default.conf
-
     # Copy the "int" directory with specific contents
     COPY int/ /var/www/html/int/
 
