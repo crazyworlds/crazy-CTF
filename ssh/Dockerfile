@@ -6,9 +6,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssh-server 
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
-ENV CTF_USER=${CTF_USER_ARG} 
-
-RUN useradd -m ${CTF_USER} -s /bin/bash # Usa la variabile ENV
+# Directly use CTF_USER_ARG for useradd to ensure it's resolved
+RUN useradd -m ${CTF_USER_ARG} -s /bin/bash 
+# Set ENV CTF_USER for later commands that might use it (e.g., echo to .bashrc)
+ENV CTF_USER=${CTF_USER_ARG}
 
 # Create the .ssh directory and set correct permissions for the CTF user
 RUN mkdir /home/${CTF_USER}/.ssh
