@@ -2,7 +2,24 @@
 FROM debian:stable-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK (Java Runtime Environment), and curl
-RUN apt-get update && apt-get install -y --no-install-recommends openssh-server sshpass openjdk-17-jre-headless curl tar
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-server \
+    sshpass \
+    apache2 \
+    php \
+    php-cli \
+    php-curl \
+    php-gd \
+    php-json \
+    php-mbstring \
+    php-mysql \
+    php-xml \
+    php-zip \
+    libapache2-mod-php \
+    curl \
+    unzip \
+    tar
+
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -28,20 +45,37 @@ RUN echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
 RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 
 # ******************************************************************
-# Metabase Configuration (CVE-2023-38646)
+# FuelCMS Configuration (CVE-2018-16763)
 # ******************************************************************
 
-# Create a directory for Metabase
-RUN mkdir /opt/activemq
-WORKDIR /opt/activemq
+# Download a vulnerable version of FuelCMS (1.4.1 is vulnerable to CVE-2018-16763)
+RUN curl -L https://github.com/daylightstudio/FUEL-CMS/archive/1.4.1.zip -o /tmp/fuelcms-1.4.1.zip
+RUN unzip /tmp/fuelcms-1.4.1.zip -d /tmp/
+RUN mv /tmp/FUEL-CMS-1.4.1/* /var/www/html/ # Move to Apache's default web root
 
-RUN curl -L https://archive.apache.org/dist/activemq/5.18.2/apache-activemq-5.18.2-bin.tar.gz -o apache-activemq-5.18.2-bin.tar.gz
-RUN tar -xzf apache-activemq-5.18.2-bin.tar.gz --strip-components=1
+# Set permissions for FuelCMS files
+RUN chown -R www-data:www-data /var/www/html/
+RUN chmod -R 755 /var/www/html/
 
-RUN chmod -R 755 /opt/activemq
-RUN chown -R root:root /opt/activemq 
-RUN rm apache-activemq-5.18.2-bin.tar.gz
+# Configure Apache for FuelCMS
+# Enable Apache modules needed for FuelCMS (rewrite and PHP)
+RUN a2enmod rewrite
+RUN a2enmod php7.4 # Or the version installed by default (e.g., php8.2)
 
+# Remove default Apache site config
+RUN rm /etc/apache2/sites-available/000-default.conf
+RUN rm /etc/apache2/sites-enabled/000-default.conf
+
+# Create a new Apache site config for FuelCMS
+COPY ssh/fuelcms.conf /etc/apache2/sites-available/fuelcms.conf
+RUN a2ensite fuelcms.conf
+
+# Ensure Apache runs as root for privilege escalation (NOT FOR PRODUCTION!)
+RUN sed -i 's/User ${APACHE_RUN_USER}/User root/' /etc/apache2/apache2.conf
+RUN sed -i 's/Group ${APACHE_RUN_GROUP}/Group root/' /etc/apache2/apache2.conf
+
+# Clean up downloaded files
+RUN rm /tmp/fuelcms-1.4.1.zip
 
 # ******************************************************************
 # Fake .bash_history for clue and disable history writing
@@ -80,7 +114,7 @@ RUN chmod 400 /root/flag1.txt
 RUN chown root:root /root/flag1.txt
 
 # Expose necessary ports: 22 for SSH and 3000 for Metabase (default)
-EXPOSE 22 61616 8161
+EXPOSE 22 80
 
 # Start SSH and Metabase in background as root
 CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/activemq/bin/activemq console"]
