@@ -7,9 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssh-server 
 # Create the CTF user
 ARG CTF_USER_ARG # Receives the value from docker-compose build --build-arg
 # Directly use CTF_USER_ARG for useradd to ensure it's resolved
-ENV CTF_USER=${CTF_USER_ARG}
-
-RUN useradd -m ${CTF_USER} -s /bin/bash
+RUN useradd -m ${CTF_USER_ARG} -s /bin/bash
 # Set ENV CTF_USER for later commands that might use it (e.g., echo to .bashrc)
 ENV CTF_USER=${CTF_USER_ARG}
 
@@ -62,4 +60,3 @@ EXPOSE 22
 
 # Start SSH in foreground
 CMD ["/usr/sbin/sshd", "-D"]
-

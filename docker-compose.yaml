@@ -32,6 +32,10 @@ services:
     build:
       context: .
       dockerfile: ./ssh/Dockerfile
+      args: # <--- NUOVO: Passa gli argomenti di build al Dockerfile
+        CTF_USER_ARG: ${CTF_USER}
+        FLAG_ONE_CONTENT_ARG: ${FLAG_ONE_CONTENT}
+        SSH_TARGET_2_PRIVATE_IP_ARG: ${SSH_TARGET_2_PRIVATE_IP}
     ports:
       - "2222:22"            # SSH accessibile dalla rete pubblica dell'host
       - "3000:3000"
@@ -47,6 +51,9 @@ services:
     build:
       context: .
       dockerfile: ./ssh2/Dockerfile
+      args: # <--- NUOVO: Passa gli argomenti di build al Dockerfile
+        CTF_USER_ARG: ${CTF_USER}
+        FLAG_TWO_CONTENT_ARG: ${FLAG_TWO_CONTENT}
     networks:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
