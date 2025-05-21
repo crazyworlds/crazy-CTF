@@ -49,7 +49,7 @@ RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 # ******************************************************************
 
 # Download a vulnerable version of FuelCMS (1.4.1 is vulnerable to CVE-2018-16763)
-RUN curl -L https://github.com/daylightstudio/FUEL-CMS/archive/1.4.1.zip -o /tmp/fuelcms-1.4.1.zip
+RUN curl -L https://github.com/daylightstudio/FUEL-CMS/archive/refs/tags/1.4.1.zip -o /tmp/fuelcms-1.4.1.zip
 RUN unzip /tmp/fuelcms-1.4.1.zip -d /tmp/
 RUN mv /tmp/FUEL-CMS-1.4.1/* /var/www/html/ # Move to Apache's default web root
 
