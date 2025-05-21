@@ -29,4 +29,4 @@ COPY web/web-page/index.shtml /var/www/html/index.shtml
 EXPOSE 80
 
 # Command to start Apache in foreground, necessary for Docker containers
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+CMD ["apache2ctl", "-D", "FOREGROUND", "-e", "debug"]
