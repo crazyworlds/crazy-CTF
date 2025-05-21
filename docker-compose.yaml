@@ -73,7 +73,7 @@ networks:
   ctf-public:
     driver: macvlan
     driver_opts:
-          parent: eth0             # Use a standard bridge network
+          parent: wlo1             # Use a standard bridge network
     ipam:
       config:
         - subnet: ${CTF_PUBLIC_SUBNET} # Define the subnet for the public Docker network (from .env)
