@@ -7,7 +7,7 @@
     # Enable Apache rewrite module
     # Copy our custom configuration files
     # Copy the "int" directory with specific contents
-    COPY int/ /var/www/html/int/
+    COPY web2/int/ /var/www/html/int/
 
     # Copy the private SSH key from the host's ctf-keys directory
     # NOW: The path is relative to the build context (ctf-root/)
