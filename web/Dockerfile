@@ -1,11 +1,14 @@
+# Use a Debian slim image as base
 FROM debian:stable-slim
-LABEL version="Web Server CTF"
-LABEL description="Web Server to CTF content"
-LABEL maintainer="The`{crazy"
-RUN apt update 
-RUN apt install –y apache2 
-RUN apt install –y apache2-utils 
-RUN apt clean 
-EXPOSE 80
+
+# Update packages and install Apache2
+RUN apt-get update && apt-get install -y --no-install-recommends apache2
+
+# Copy our website files to Apache's default root directory
 COPY web/web-page/ /var/www/html/
-CMD [“apache2ctl”, “-D”, “FOREGROUND”]
+
+# Expose port 80, the standard HTTP port
+EXPOSE 80
+
+# Command to start Apache in foreground, necessary for Docker containers
+CMD ["apache2ctl", "-D", "FOREGROUND"]
