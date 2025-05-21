@@ -15,7 +15,7 @@ RUN rm /etc/apache2/sites-available/000-default.conf
 RUN rm /etc/apache2/sites-enabled/000-default.conf
 
 # Copy our custom configuration files from the new 'conf/' directory
-COPY web/conf/apache2.conf /etc/apache2/apache2.conf
+COPY web/conf/apache.conf /etc/apache2/apache2.conf
 COPY web/conf/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 # Enable our virtual host
