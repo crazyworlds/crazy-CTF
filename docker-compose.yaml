@@ -3,8 +3,8 @@ services:
   webserver:
     container_name: web-server
     build:
-      context: ./web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./web/Dockerfile
     networks:
       ctf-public:            # Connect to the public CTF network
         ipv4_address: ${WEB_EXTERNAL_IP} # Assign a static IP on the public network (from .env)
@@ -14,8 +14,8 @@ services:
   webserver2:
     container_name: web-server2
     build:
-      context: ./web2
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./web2/Dockerfile
     networks:
       ctf-public:            # Connect to the public CTF network
         ipv4_address: ${WEB_INTERNAL_IP} # Assign a static IP on the public network (from .env)
@@ -30,8 +30,8 @@ services:
   ssh:
     container_name: ssh
     build:
-      context: ./ssh
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./ssh/Dockerfile
     ports:
       - "2222:22"            # SSH accessibile dalla rete pubblica dell'host
       - "3000:3000"
@@ -45,8 +45,8 @@ services:
   ssh2:
     container_name: ssh2
     build:
-      context: ./ssh2
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./ssh2/Dockerfile
     networks:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env

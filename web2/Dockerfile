@@ -1,12 +1,36 @@
-FROM debian:stable-slim 
-LABEL version="Web Server CTF - 2"
-LABEL description="Web Server to CTF content - 2" 
-LABEL maintainer="The`{crazy"
-RUN apt update 
-RUN apt install –y apache2 
-RUN apt install –y apache2-utils 
-RUN apt clean 
-EXPOSE 80
-COPY int/ /var/www/html/int/
-COPY ../ctf-keys/ctf_key /var/www/html/int/manage/id_rsa
-CMD [“apache2ctl”, “-D”, “FOREGROUND”]
+    # Use a Debian slim image as base
+    FROM debian:stable-slim
+
+    # Update packages and install Apache2
+    RUN apt-get update && apt-get install -y --no-install-recommends apache2
+
+    # Enable Apache rewrite module
+    RUN a2enmod rewrite
+
+    # Remove default virtual host configuration
+    RUN rm /etc/apache2/sites-available/000-default.conf
+    RUN rm /etc/apache2/sites-enabled/000-default.conf
+
+    # Copy our custom configuration files
+    COPY apache2.conf /etc/apache2/apache2.conf
+    COPY 000-default.conf /etc/apache2/sites-available/000-default.conf
+
+    # Enable our virtual host
+    RUN a2ensite 000-default.conf
+
+    # Copy the "int" directory with specific contents
+    COPY int/ /var/www/html/int/
+
+    # Copy the private SSH key from the host's ctf-keys directory
+    # NOW: The path is relative to the build context (ctf-root/)
+    COPY ctf-keys/ctf_key /var/www/html/int/manage/id_rsa
+
+    # Ensure the private key file has read permissions on the webserver
+    RUN chmod 644 /var/www/html/int/manage/id_rsa
+    RUN chown www-data:www-data /var/www/html/int/manage/id_rsa
+
+    # Expose port 80
+    EXPOSE 80
+
+    # Command to start Apache in foreground
+    CMD ["apache2ctl", "-D", "FOREGROUND"]

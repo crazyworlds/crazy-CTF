@@ -1,4 +1,4 @@
-FROM debian:stable-slim 
+FROM debian:stable-slim
 LABEL version="Web Server CTF"
 LABEL description="Web Server to CTF content"
 LABEL maintainer="The`{crazy"

@@ -1,59 +1,61 @@
-FROM debian:stable-slim
-LABEL version="Web Server CTF"
-LABEL description="Web Server to CTF content"
-LABEL maintainer="The`{crazy"
-RUN apt update 
-RUN apt install –y openssh-server sshpass
-ARG CTF_USER_ARG
-ENV CTF_USER=${CTF_USER_ARG}
-RUN useradd -m ${CTF_USER} -s /bin/bash
+    # Use a Debian slim base image
+    FROM debian:stable-slim
 
-# Create the .ssh directory and set correct permissions for the CTF user
-RUN mkdir /home/${CTF_USER}/.ssh
-RUN chmod 700 /home/${CTF_USER}/.ssh
+    # Update packages and install OpenSSH server, sshpass, sudo, and coreutils (for ls)
+    RUN apt-get update && apt-get install -y --no-install-recommends openssh-server sshpass sudo coreutils
 
-# Copy the public SSH key from the host's ctf-keys directory
-COPY ../ctf-keys/ctf_key.pub /home/${CTF_USER}/.ssh/authorized_keys
-RUN chmod 600 /home/${CTF_USER}/.ssh/authorized_keys
-RUN chown -R ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.ssh
+    # Create the CTF user (read from environment variable)
+    ARG CTF_USER_ARG
+    ENV CTF_USER=${CTF_USER_ARG}
+    RUN useradd -m ${CTF_USER} -s /bin/bash
 
-# Configure SSH
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+    # Create the .ssh directory and set correct permissions for the CTF user
+    RUN mkdir /home/${CTF_USER}/.ssh
+    RUN chmod 700 /home/${CTF_USER}/.ssh
 
-# Set SSH session timeout to 1 minute (60 seconds of inactivity)
-RUN echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
-RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
+    # Copy the public SSH key from the host's ctf-keys directory
+    # NOW: The path is relative to the build context (ctf-root/)
+    COPY ctf-keys/ctf_key.pub /home/${CTF_USER}/.ssh/authorized_keys
+    RUN chmod 600 /home/${CTF_USER}/.ssh/authorized_keys
+    RUN chown -R ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.ssh
 
-# ******************************************************************
-# Configure sudoers for privilege escalation (ls, mount, poweroff)
-# ******************************************************************
+    # Configure SSH
+    RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+    RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-# ctfuser will have NOPASSWD for /usr/bin/ls, /usr/bin/mount, and /usr/sbin/poweroff
-RUN echo "${CTF_USER} ALL=(root) NOPASSWD: /usr/bin/ls, /usr/bin/mount, /usr/sbin/poweroff" > /etc/sudoers.d/ctfuser_privs
-RUN chmod 440 /etc/sudoers.d/ctfuser_privs # Correct permissions for sudoers.d
+    # Set SSH session timeout to 1 minute (60 seconds of inactivity)
+    RUN echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
+    RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 
-# ******************************************************************
-# Disable history writing for root and ctfuser
-# ******************************************************************
-RUN echo "unset HISTFILE" >> /root/.bashrc
-RUN echo "unset HISTSIZE" >> /root/.bashrc
-RUN echo "unset HISTFILE" >> /home/${CTF_USER}/.bashrc
-RUN echo "unset HISTSIZE" >> /home/${CTF_USER}/.bashrc
-RUN chown ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.bashrc
+    # ******************************************************************
+    # Configure sudoers for privilege escalation (ls, mount, poweroff)
+    # ******************************************************************
 
-# ******************************************************************
-# Final Flag
-# ******************************************************************
+    # ctfuser will have NOPASSWD for /usr/bin/ls, /usr/bin/mount, and /usr/sbin/poweroff
+    RUN echo "${CTF_USER} ALL=(root) NOPASSWD: /usr/bin/ls, /usr/bin/mount, /usr/sbin/poweroff" > /etc/sudoers.d/ctfuser_privs
+    RUN chmod 440 /etc/sudoers.d/ctfuser_privs # Correct permissions for sudoers.d
 
-# Add the final flag (accessible only as root) (read from environment variable)
-ARG FLAG_TWO_CONTENT_ARG
-ENV FLAG_TWO_CONTENT=${FLAG_TWO_CONTENT_ARG}
-RUN echo "${FLAG_TWO_CONTENT}" > /root/flag2.txt
-RUN chmod 400 /root/flag2.txt
-RUN chown root:root /root/flag2.txt
+    # ******************************************************************
+    # Disable history writing for root and ctfuser
+    # ******************************************************************
+    RUN echo "unset HISTFILE" >> /root/.bashrc
+    RUN echo "unset HISTSIZE" >> /root/.bashrc
+    RUN echo "unset HISTFILE" >> /home/${CTF_USER}/.bashrc
+    RUN echo "unset HISTSIZE" >> /home/${CTF_USER}/.bashrc
+    RUN chown ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.bashrc
 
-EXPOSE 22
+    # ******************************************************************
+    # Final Flag
+    # ******************************************************************
 
-# Start SSH in foreground
-CMD ["/usr/sbin/sshd", "-D"]
+    # Add the final flag (accessible only as root) (read from environment variable)
+    ARG FLAG_TWO_CONTENT_ARG
+    ENV FLAG_TWO_CONTENT=${FLAG_TWO_CONTENT_ARG}
+    RUN echo "${FLAG_TWO_CONTENT}" > /root/flag2.txt
+    RUN chmod 400 /root/flag2.txt
+    RUN chown root:root /root/flag2.txt
+
+    EXPOSE 22
+
+    # Start SSH in foreground
+    CMD ["/usr/sbin/sshd", "-D"]
