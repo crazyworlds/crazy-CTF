@@ -60,7 +60,7 @@ services:
     cap_add: 
       - SYS_ADMIN
     ports:
-      - "22:22"
+      - "2022:22"
     restart: unless-stopped
     read_only: true
     volumes:
