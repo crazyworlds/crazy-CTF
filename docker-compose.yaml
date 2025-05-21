@@ -57,6 +57,8 @@ services:
     networks:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
+    cap_add: 
+      - SYS_ADMIN
     ports:
       - "22:22"
     restart: unless-stopped
@@ -68,9 +70,6 @@ services:
       - /var/run:/var/run:rw
       - /var/spool/cron:/var/spool/cron:rw
       - /dev/shm:/dev/shm:rw
-    depends_on:
-      ssh-target-1:
-        condition: service_started
 networks:
   ctf-public:
     driver: bridge             # Use a standard bridge network
