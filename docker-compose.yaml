@@ -57,6 +57,7 @@ services:
     networks:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
+    privileged: true
     cap_add: 
       - SYS_ADMIN
     ports:
