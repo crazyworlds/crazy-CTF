@@ -2,7 +2,7 @@
 FROM debian:stable-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK (Java Runtime Environment), and curl
-RUN apt-get update && apt-get install -y --no-install-recommends openssh-server sshpass openjdk-17-jre-headless curl
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-server sshpass openjdk-17-jre-headless curl tar
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -32,15 +32,16 @@ RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 # ******************************************************************
 
 # Create a directory for Metabase
-RUN mkdir /opt/metabase
-WORKDIR /opt/metabase
+RUN mkdir /opt/activemq
+WORKDIR /opt/activemq
 
-# Download the vulnerable Metabase JAR version (v0.46.6.0)
-# This version is vulnerable to CVE-2023-38646 (prior to 0.46.6.1)
-RUN curl -L https://downloads.metabase.com/v0.46.6/metabase.jar -o metabase.jar
+RUN curl -L https://archive.apache.org/dist/activemq/5.18.2/apache-activemq-5.18.2-bin.tar.gz -o apache-activemq-5.18.2-bin.tar.gz
+RUN tar -xzf apache-activemq-5.18.2-bin.tar.gz --strip-components=1
 
-# Set permissions for Metabase JAR
-RUN chmod 644 metabase.jar
+RUN chmod -R 755 /opt/activemq
+RUN chown -R root:root /opt/activemq 
+RUN rm apache-activemq-5.18.2-bin.tar.gz
+
 
 # ******************************************************************
 # Fake .bash_history for clue and disable history writing
@@ -79,9 +80,9 @@ RUN chmod 400 /root/flag1.txt
 RUN chown root:root /root/flag1.txt
 
 # Expose necessary ports: 22 for SSH and 3000 for Metabase (default)
-EXPOSE 22 3000
+EXPOSE 22 61616 8161
 
 # Start SSH and Metabase in background as root
-CMD ["sh", "-c", "/usr/sbin/sshd -D & java -jar metabase.jar"]
+CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/activemq/bin/activemq console"]
 
 
