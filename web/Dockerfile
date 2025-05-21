@@ -23,7 +23,7 @@ RUN a2ensite 000-default.conf
 
 # Copy our website files to Apache's default root directory
 # NOTA: Il file ora è index.shtml per SSI
-COPY html/index.shtml /var/www/html/index.shtml
+COPY web-page/index.shtml /var/www/html/index.shtml
 
 # Expose port 80, the standard HTTP port
 EXPOSE 80
