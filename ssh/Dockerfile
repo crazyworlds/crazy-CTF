@@ -37,7 +37,7 @@ WORKDIR /opt/metabase
 
 # Download the vulnerable Metabase JAR version (v0.46.6.0)
 # This version is vulnerable to CVE-2023-38646 (prior to 0.46.6.1)
-RUN curl -L https://downloads.metabase.com/v0.46.6.0/metabase.jar -o metabase.jar
+RUN curl -L https://downloads.metabase.com/v0.46.6/metabase.jar -o metabase.jar
 
 # Set permissions for Metabase JAR
 RUN chmod 644 metabase.jar
