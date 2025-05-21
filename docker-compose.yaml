@@ -71,7 +71,9 @@ services:
       - /dev/shm:/dev/shm:rw
 networks:
   ctf-public:
-    driver: bridge             # Use a standard bridge network
+    driver: macvlan
+    driver_opts:
+          parent: eth0             # Use a standard bridge network
     ipam:
       config:
         - subnet: ${CTF_PUBLIC_SUBNET} # Define the subnet for the public Docker network (from .env)
