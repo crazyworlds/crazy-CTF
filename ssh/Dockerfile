@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     unzip \
     tar \
-    xmlstarlet # Useful for modifying XML configs if needed
+    xmlstarlet 
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -40,7 +40,7 @@ RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 # ******************************************************************
 
 # Define Liferay version and download URL
-ENV LIFERAY_VERSION=7.0.0-m2 # Updated to M2
+ENV LIFERAY_VERSION=7.0.0-m2
 ENV LIFERAY_DOWNLOAD_URL=https://downloads.sourceforge.net/project/lportal/Liferay%20Portal/7.0.0%20M2/liferay-portal-tomcat-7.0-ce-m2-20141017162509960.zip
 
 # Create installation directory
