@@ -6,7 +6,7 @@ FROM debian:bullseye-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-server \
     sshpass \
-    openjdk-8-jdk \
+    openjdk-11-jdk \
     curl \
     unzip \
     tar \
