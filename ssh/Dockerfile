@@ -1,4 +1,3 @@
-# Use Debian Bullseye slim base image
 FROM debian:bullseye-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
@@ -23,7 +22,8 @@ ENV CTF_USER=${CTF_USER_ARG}
 RUN mkdir /home/${CTF_USER}/.ssh
 RUN chmod 700 /home/${CTF_USER}/.ssh
 
-# Copy the public SSH key from the host's ctf-keys directory
+# Copy the publ# Use Debian Bullseye slim base image
+ic SSH key from the host's ctf-keys directory
 COPY ctf-keys/ctf_key.pub /home/${CTF_USER}/.ssh/authorized_keys
 RUN chmod 600 /home/${CTF_USER}/.ssh/authorized_keys
 RUN chown -R ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.ssh
@@ -55,7 +55,9 @@ RUN unzip liferay-portal.zip -d /tmp/liferay_extract/ # Extract to a temporary s
 
 # Move the contents of the extracted folder (assuming a single top-level dir) to /opt/liferay/
 # This handles cases where unzip creates a folder like 'liferay-portal-tomcat-7.0-ce-m2-...'
-RUN mv /tmp/liferay_extract/*/* /opt/liferay/
+# We find the exact name of the extracted directory dynamically.
+RUN EXTRACTED_DIR=$(ls -d /tmp/liferay_extract/*/) && \
+    mv ${EXTRACTED_DIR}/* /opt/liferay/
 
 # Clean up temporary files and directories
 RUN rm -rf /tmp/liferay_extract/
@@ -112,7 +114,3 @@ EXPOSE 22 8080
 
 # Start SSH and Liferay/Tomcat in background as root
 CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/liferay/tomcat/bin/catalina.sh run"]
-
-
-
-
