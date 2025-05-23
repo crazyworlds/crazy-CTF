@@ -1,5 +1,5 @@
 # Use a Debian slim base base
-FROM debian:stable-slim
+FROM debian:bullseye-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
 # Liferay requires Java. We'll use curl and unzip for download and extraction.
@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     tar \
     xmlstarlet 
+
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
