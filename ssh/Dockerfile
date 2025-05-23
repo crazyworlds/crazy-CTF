@@ -1,3 +1,4 @@
+# Use Debian Bullseye slim base image
 FROM debian:bullseye-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
@@ -11,7 +12,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     curl \
     unzip \
     tar \
-    xmlstarlet # Useful for modifying XML configs if needed
+    xmlstarlet 
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -22,8 +23,7 @@ ENV CTF_USER=${CTF_USER_ARG}
 RUN mkdir /home/${CTF_USER}/.ssh
 RUN chmod 700 /home/${CTF_USER}/.ssh
 
-# Copy the publ# Use Debian Bullseye slim base image
-ic SSH key from the host's ctf-keys directory
+# Copy the public SSH key from the host's ctf-keys directory
 COPY ctf-keys/ctf_key.pub /home/${CTF_USER}/.ssh/authorized_keys
 RUN chmod 600 /home/${CTF_USER}/.ssh/authorized_keys
 RUN chown -R ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.ssh
