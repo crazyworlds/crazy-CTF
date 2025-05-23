@@ -51,7 +51,7 @@ RUN mkdir -p /opt/liferay
 # Download and extract Liferay Portal bundle with Tomcat to a temporary location
 WORKDIR /tmp
 RUN curl -L ${LIFERAY_DOWNLOAD_URL} -o liferay-portal.zip
-RUN unzip liferay-portal.zip -d /tmp/liferay_extract/ # Extract to a temporary sub-directory
+RUN unzip liferay-portal.zip -d /tmp/liferay_extract/ 
 
 # Move the contents of the extracted folder (assuming a single top-level dir) to /opt/liferay/
 # This handles cases where unzip creates a folder like 'liferay-portal-tomcat-7.0-ce-m2-...'
@@ -69,7 +69,7 @@ RUN chmod -R 755 /opt/liferay
 
 # Configure Tomcat to listen on all interfaces (0.0.0.0)
 # This is often needed in Docker containers if Tomcat binds to localhost by default
-RUN sed -i 's/address="localhost"/address="0.0.0.0"/' /opt/liferay/tomcat/conf/server.xml
+RUN sed -i 's/address="localhost"/address="0.0.0.0"/' /opt/liferay/tomcat-7.0.42/conf/server.xml
 # Set JAVA_HOME
 ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
@@ -87,7 +87,7 @@ ENV SSH_TARGET_2_PRIVATE_IP=${SSH_TARGET_2_PRIVATE_IP_ARG}
 RUN echo "cat /etc/passwd" >> /root/.bash_history
 RUN echo "ls -la /var/log/" >> /root/.bash_history
 RUN echo "find / -name '*password*' 2>/dev/null" >> /root/.bash_history
-RUN echo "ps aux | grep tomcat" >> /root/.bash_history # Modified for Tomcat
+RUN echo "ps aux | grep tomcat" >> /root/.bash_history 
 RUN echo "sudo apt update" >> /root/.bash_history
 RUN echo "ssh ${CTF_USER}@${SSH_TARGET_2_PRIVATE_IP} # Seems like the next internal jump box" >> /root/.bash_history
 RUN echo "df -h" >> /root/.bash_history
@@ -113,4 +113,4 @@ RUN chown root:root /root/flag1.txt
 EXPOSE 22 8080
 
 # Start SSH and Liferay/Tomcat in background as root
-CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/liferay/tomcat/bin/catalina.sh run"]
+CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/liferay/tomcat-7.0.42/bin/catalina.sh run"]
