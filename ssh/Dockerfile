@@ -1,17 +1,18 @@
-# Use a Debian slim base base
+# Use Debian Bullseye slim base image
 FROM debian:bullseye-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
 # Liferay requires Java. We'll use curl and unzip for download and extraction.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
     openssh-server \
     sshpass \
     openjdk-11-jdk \
     curl \
     unzip \
     tar \
-    xmlstarlet 
-
+    xmlstarlet # Useful for modifying XML configs if needed
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -47,12 +48,17 @@ ENV LIFERAY_DOWNLOAD_URL=https://downloads.sourceforge.net/project/lportal/Lifer
 # Create installation directory
 RUN mkdir -p /opt/liferay
 
-# Download and extract Liferay Portal bundle with Tomcat
+# Download and extract Liferay Portal bundle with Tomcat to a temporary location
 WORKDIR /tmp
 RUN curl -L ${LIFERAY_DOWNLOAD_URL} -o liferay-portal.zip
-RUN unzip liferay-portal.zip -d /opt/liferay/
-# Ensure the move command matches the extracted folder name for M2
-RUN mv /opt/liferay/liferay-portal-${LIFERAY_VERSION}/* /opt/liferay/
+RUN unzip liferay-portal.zip -d /tmp/liferay_extract/ # Extract to a temporary sub-directory
+
+# Move the contents of the extracted folder (assuming a single top-level dir) to /opt/liferay/
+# This handles cases where unzip creates a folder like 'liferay-portal-tomcat-7.0-ce-m2-...'
+RUN mv /tmp/liferay_extract/*/* /opt/liferay/
+
+# Clean up temporary files and directories
+RUN rm -rf /tmp/liferay_extract/
 RUN rm liferay-portal.zip
 
 # Set proper permissions (Liferay will run as root for CTF purposes)
@@ -63,7 +69,7 @@ RUN chmod -R 755 /opt/liferay
 # This is often needed in Docker containers if Tomcat binds to localhost by default
 RUN sed -i 's/address="localhost"/address="0.0.0.0"/' /opt/liferay/tomcat/conf/server.xml
 # Set JAVA_HOME
-ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
+ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # ******************************************************************
@@ -106,6 +112,7 @@ EXPOSE 22 8080
 
 # Start SSH and Liferay/Tomcat in background as root
 CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/liferay/tomcat/bin/catalina.sh run"]
+
 
 
 
