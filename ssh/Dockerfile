@@ -8,11 +8,21 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     apt-get install -y --no-install-recommends \
     openssh-server \
     sshpass \
-    openjdk-11-jdk \
     curl \
     unzip \
     tar \
     xmlstarlet 
+
+
+RUN mkdir -p /etc/apt/keyrings
+
+RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc
+
+RUN echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+
+RUN apt update 
+
+RUN apt install temurin-8-jdk
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
