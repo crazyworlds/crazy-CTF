@@ -1,5 +1,5 @@
 # Use Debian Bullseye slim base image
-FROM debian:bullseye-slim
+FROM debian:stable-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
 # Liferay requires Java. We'll use curl and unzip for download and extraction.
