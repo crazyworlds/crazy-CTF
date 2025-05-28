@@ -37,8 +37,8 @@ services:
         FLAG_ONE_CONTENT_ARG: ${FLAG_ONE_CONTENT}
         SSH_TARGET_2_PRIVATE_IP_ARG: ${SSH_TARGET_2_PRIVATE_IP}
     ports:
-      - "2222:22"            # SSH accessibile dalla rete pubblica dell'host
-      - "8080:8080"          # Porta HTTP di Liferay/Tomcat
+      - "2222:22"           
+      - "6379:6379"        
     networks:
       ctf-public:
         ipv4_address: ${SSH_TARGET_1_PUBLIC_IP} # Legge l'IP dal .env

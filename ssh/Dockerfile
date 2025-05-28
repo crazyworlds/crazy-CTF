@@ -1,23 +1,29 @@
 # Use Debian Bullseye slim base image
-FROM debian:sid-slim
+FROM debian:buster-20181112-slim
+
+
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
 # Liferay requires Java. We'll use curl and unzip for download and extraction.
+RUN touch /etc/apt/apt.conf.d/99verify-peer.conf  && echo >>/etc/apt/apt.conf.d/99verify-peer.conf "Acquire { https::Verify-Peer false }"
+RUN echo >>/etc/apt/apt.conf.d/99verify-peer.conf "APT{Ignore {"gpg-pubkey"; }};"
+
+
+RUN echo "deb   [ allow-insecure=yes ]   https://snapshot.debian.org/archive/debian/20211105T145313Z/ buster main" > /etc/apt/sources.list
+#RUN echo "deb   [ allow-insecure=yes ]   https://snapshot.debian.org/archive/debian-security/20211105T192626Z/ buster main" >> /etc/apt/sources.list
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --allow-unauthenticated --no-install-recommends \
     openssh-server \
+    procps \
     sshpass \
     curl \
     unzip \
     tar \
-    xmlstarlet \
-    apt-transport-https \
     gpg \
-    openjdk-8-jdk \
     wget
 
-
+RUN apt-get install -y --allow-unauthenticated  redis-server redis
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -38,46 +44,24 @@ RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/s
 # Allow root login with key (useful for your debugging)
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
+RUN sed -i 's/#PidFile \/var\/run\/sshd.pid/PidFile \/var\/sshd.pid/' /etc/ssh/sshd_config
+
 # Set SSH session timeout to 1 minute (60 seconds of inactivity)
 RUN echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
 RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
-
 # ******************************************************************
-# Liferay Portal Configuration (CVE-2020-7961)
+# Redis Server Configuration (CVE-2022-0543)
 # ******************************************************************
 
-# Define Liferay version and download URL
-ENV LIFERAY_VERSION=7.0.0-m2
-ENV LIFERAY_DOWNLOAD_URL=https://downloads.sourceforge.net/project/lportal/Liferay%20Portal/7.0.0%20M2/liferay-portal-tomcat-7.0-ce-m2-20141017162509960.zip
-
-# Create installation directory
-RUN mkdir -p /opt/liferay
-
-# Download and extract Liferay Portal bundle with Tomcat to a temporary location
-WORKDIR /tmp
-RUN curl -L ${LIFERAY_DOWNLOAD_URL} -o liferay-portal.zip
-RUN unzip liferay-portal.zip -d /tmp/liferay_extract/ 
-
-# Move the contents of the extracted folder (assuming a single top-level dir) to /opt/liferay/
-# This handles cases where unzip creates a folder like 'liferay-portal-tomcat-7.0-ce-m2-...'
-# We find the exact name of the extracted directory dynamically.
-RUN EXTRACTED_DIR=$(ls -d /tmp/liferay_extract/*/) && \
-    mv ${EXTRACTED_DIR}/* /opt/liferay/
-
-# Clean up temporary files and directories
-RUN rm -rf /tmp/liferay_extract/
-RUN rm liferay-portal.zip
-
-# Set proper permissions (Liferay will run as root for CTF purposes)
-RUN chown -R root:root /opt/liferay
-RUN chmod -R 755 /opt/liferay
-
-# Configure Tomcat to listen on all interfaces (0.0.0.0)
-# This is often needed in Docker containers if Tomcat binds to localhost by default
-RUN sed -i 's/address="localhost"/address="0.0.0.0"/' /opt/liferay/tomcat-7.0.42/conf/server.xml
-# Set JAVA_HOME
-ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
+# Configure Redis to listen on all interfaces (0.0.0.0)
+# By default, Redis in Debian might bind to 127.0.0.1.
+RUN sed -i 's/^bind 127.0.0.1 ::1/bind 0.0.0.0/' /etc/redis/redis.conf
+# Ensure Redis runs as root for privilege escalation (NOT FOR PRODUCTION!)
+# Redis usually runs as 'redis' user. We'll make it run as root.
+# This requires modifying the systemd service or starting it directly.
+# For simplicity in CTF, we'll start it directly as root in CMD.
+# No password for simplicity in CTF
+RUN sed -i 's/^# requirepass foobared/requirepass ""/' /etc/redis/redis.conf || true 
 
 # ******************************************************************
 # Fake .bash_history for clue and disable history writing
@@ -115,7 +99,7 @@ RUN chmod 400 /root/flag1.txt
 RUN chown root:root /root/flag1.txt
 
 # Expose necessary ports: 22 for SSH, 8080 for Liferay/Tomcat
-EXPOSE 22 8080
+EXPOSE 22 6379
 
 # Start SSH and Liferay/Tomcat in background as root
-CMD ["sh", "-c", "/usr/sbin/sshd -D & /opt/liferay/tomcat-7.0.42/bin/catalina.sh run"]
+CMD ["sh", "-c", " [ ! -d /run/sshd/ ] && (mkdir -p /run/sshd/) ; /usr/sbin/sshd -D & /usr/bin/redis-server /etc/redis/redis.conf --protected-mode no"]
