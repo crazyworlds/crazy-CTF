@@ -1,5 +1,5 @@
 # Use Debian Bullseye slim base image
-FROM debian:stable-slim
+FROM debian:sid-slim
 
 # Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
 # Liferay requires Java. We'll use curl and unzip for download and extraction.
@@ -13,19 +13,11 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     tar \
     xmlstarlet \
     apt-transport-https \
-    gpg
+    gpg \
+    openjdk-8-jdk \
+    wget
 
 
-
-RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
-
-
-RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
-
-
-RUN apt update 
-
-RUN apt install temurin-8-jdk
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -84,7 +76,7 @@ RUN chmod -R 755 /opt/liferay
 # This is often needed in Docker containers if Tomcat binds to localhost by default
 RUN sed -i 's/address="localhost"/address="0.0.0.0"/' /opt/liferay/tomcat-7.0.42/conf/server.xml
 # Set JAVA_HOME
-ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # ******************************************************************
