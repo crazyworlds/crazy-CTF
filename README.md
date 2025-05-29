@@ -1,4 +1,4 @@
-Welcome to the repository of our Capture The Flag (CTF) "EvilCorp Journey"!
+Welcome to the repository of our ** Capture The Flag (CTF) "EvilCorp Journey"! **
 
 This project offers a complete and self-contained CTF environment, designed to challenge your cybersecurity skills. Whether you are a student, an ethical hacking enthusiast, or a security professional, this CTF is crafted to provide you with a practical and stimulating learning experience.
 
@@ -9,9 +9,10 @@ To launch the "EvilCorp Journey" environment on your system, follow these simple
 
 Clone the Repository:
 If you haven't already, clone this repository to your local system:
-
+```
 git clone https://github.com/crazyworlds/crazy-CTF.git
 cd crazy-CTF
+```
 
 Prerequisites:
 Ensure you have Docker and Docker Compose installed and functional on your system. You can download them from the official Docker website.
@@ -20,9 +21,10 @@ Start the CTF Environment:
 The repository includes a startup script (start_ctf.sh) that will generate the necessary SSH keys, configure the environment, and launch all Docker services.
 
 From the root directory of the repository (crazy-CTF/), make the script executable and run it:
-
+```
 chmod +x start_ctf.sh
 ./start_ctf.sh
+```
 
 This process might take a few minutes on the first run, as Docker will need to download base images and build the containers.
 
