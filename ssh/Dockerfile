@@ -1,29 +1,56 @@
 # Use Debian Bullseye slim base image
-FROM debian:buster-20181112-slim
+FROM debian:bullseye-slim
 
-
-
-# Update packages and install OpenSSH server, sshpass, OpenJDK, and utilities
-# Liferay requires Java. We'll use curl and unzip for download and extraction.
-RUN touch /etc/apt/apt.conf.d/99verify-peer.conf  && echo >>/etc/apt/apt.conf.d/99verify-peer.conf "Acquire { https::Verify-Peer false }"
-RUN echo >>/etc/apt/apt.conf.d/99verify-peer.conf "APT{Ignore {"gpg-pubkey"; }};"
-
-
-RUN echo "deb   [ allow-insecure=yes ]   https://snapshot.debian.org/archive/debian/20211105T145313Z/ buster main" > /etc/apt/sources.list
-#RUN echo "deb   [ allow-insecure=yes ]   https://snapshot.debian.org/archive/debian-security/20211105T192626Z/ buster main" >> /etc/apt/sources.list
+# Update packages and install essential utilities first, including ca-certificates and debian-archive-keyring
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
-    apt-get install -y --allow-unauthenticated --no-install-recommends \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    debian-archive-keyring \     
     openssh-server \
-    procps \
     sshpass \
     curl \
     unzip \
     tar \
-    gpg \
-    wget
+    xmlstarlet \
+    gnupg \
+    apt-transport-https \
+    dirmngr 
 
-RUN apt-get install -y --allow-unauthenticated  redis-server redis
+# Force another apt-get update to ensure ca-certificates are picked up
+RUN apt-get update
+
+# ******************************************************************
+# Installazione di Redis Server (versione vulnerabile a CVE-2022-0543)
+# ******************************************************************
+# Clean up default sources.list from the base image to avoid conflicts
+RUN rm /etc/apt/sources.list
+
+# Aggiungi il repository Debian Snapshot per Bullseye da una data precedente alla patch
+# La patch per CVE-2022-0543 è stata rilasciata a marzo 2022 (Redis 6.0.16)
+# Usiamo una data di snapshot precedente, ad esempio febbraio 2022
+# La chiave è ora fornita da debian-archive-keyring
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://snapshot.debian.org/archive/debian/20220228T000000Z/ bullseye main" > /etc/apt/sources.list.d/snapshot.list
+# Aggiungi anche il repository standard di Bullseye per le dipendenze
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list.d/debian.list
+# Corretto l'URL del repository di sicurezza
+RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list.d/debian.list
+
+
+# Pinna il pacchetto redis-server per favorire il repository snapshot, senza specificare la versione esatta
+# Questo permette ad apt di scegliere la versione più alta disponibile dal repository snapshot
+RUN echo "Package: redis-server" > /etc/apt/preferences.d/redis-pin
+RUN echo "Pin: release a=bullseye, o=Debian, l=Debian, n=bullseye, c=main, v=20220228T000000Z" >> /etc/apt/preferences.d/redis-pin
+RUN echo "Pin-Priority: 900" >> /etc/apt/preferences.d/redis-pin
+# Aumenta la priorità del repository snapshot rispetto al default per Redis
+RUN echo "APT::Default-Release \"bullseye\";" >> /etc/apt/apt.conf.d/00local-release
+
+# Aggiorna i repository e installa redis-server
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends redis-server
+
+# Verifica la versione di Redis installata (per debug)
+RUN redis-server --version || true
 
 # Create the CTF user (read from environment variable)
 ARG CTF_USER_ARG
@@ -39,16 +66,22 @@ COPY ctf-keys/ctf_key.pub /home/${CTF_USER}/.ssh/authorized_keys
 RUN chmod 600 /home/${CTF_USER}/.ssh/authorized_keys
 RUN chown -R ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.ssh
 
+# ******************************************************************
+# SSH Configuration and Privilege Separation Directory
+# ******************************************************************
+# Create the privilege separation directory for SSH
+RUN mkdir -p /run/sshd
+RUN chmod 0755 /run/sshd
+
 # Configure SSH to accept only key authentication (disable password)
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 # Allow root login with key (useful for your debugging)
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-RUN sed -i 's/#PidFile \/var\/run\/sshd.pid/PidFile \/var\/sshd.pid/' /etc/ssh/sshd_config
-
 # Set SSH session timeout to 1 minute (60 seconds of inactivity)
 RUN echo "ClientAliveInterval 60" >> /etc/ssh/sshd_config
 RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
+
 # ******************************************************************
 # Redis Server Configuration (CVE-2022-0543)
 # ******************************************************************
@@ -57,11 +90,10 @@ RUN echo "ClientAliveCountMax 0" >> /etc/ssh/sshd_config
 # By default, Redis in Debian might bind to 127.0.0.1.
 RUN sed -i 's/^bind 127.0.0.1 ::1/bind 0.0.0.0/' /etc/redis/redis.conf
 # Ensure Redis runs as root for privilege escalation (NOT FOR PRODUCTION!)
-# Redis usually runs as 'redis' user. We'll make it run as root.
-# This requires modifying the systemd service or starting it directly.
-# For simplicity in CTF, we'll start it directly as root in CMD.
+# Disable protected mode for easier exploitation in CTF
+RUN sed -i 's/^protected-mode yes/protected-mode no/' /etc/redis/redis.conf
 # No password for simplicity in CTF
-RUN sed -i 's/^# requirepass foobared/requirepass ""/' /etc/redis/redis.conf || true 
+RUN sed -i 's/^# requirepass foobared/requirepass ""/' /etc/redis/redis.conf || true
 
 # ******************************************************************
 # Fake .bash_history for clue and disable history writing
@@ -76,7 +108,7 @@ ENV SSH_TARGET_2_PRIVATE_IP=${SSH_TARGET_2_PRIVATE_IP_ARG}
 RUN echo "cat /etc/passwd" >> /root/.bash_history
 RUN echo "ls -la /var/log/" >> /root/.bash_history
 RUN echo "find / -name '*password*' 2>/dev/null" >> /root/.bash_history
-RUN echo "ps aux | grep tomcat" >> /root/.bash_history 
+RUN echo "ps aux | grep redis" >> /root/.bash_history # Modified for Redis
 RUN echo "sudo apt update" >> /root/.bash_history
 RUN echo "ssh ${CTF_USER}@${SSH_TARGET_2_PRIVATE_IP} # Seems like the next internal jump box" >> /root/.bash_history
 RUN echo "df -h" >> /root/.bash_history
@@ -98,8 +130,8 @@ RUN echo "${FLAG_ONE_CONTENT}" > /root/flag1.txt
 RUN chmod 400 /root/flag1.txt
 RUN chown root:root /root/flag1.txt
 
-# Expose necessary ports: 22 for SSH, 8080 for Liferay/Tomcat
+# Expose necessary ports: 22 for SSH, 6379 for Redis
 EXPOSE 22 6379
 
-# Start SSH and Liferay/Tomcat in background as root
-CMD ["sh", "-c", " [ ! -d /run/sshd/ ] && (mkdir -p /run/sshd/) ; /usr/sbin/sshd -D & /usr/bin/redis-server /etc/redis/redis.conf --protected-mode no"]
+# Start SSH and Redis in background, ensuring SSH is the main foreground process
+CMD ["sh", "-c", "redis-server /etc/redis/redis.conf & exec /usr/sbin/sshd -D"]

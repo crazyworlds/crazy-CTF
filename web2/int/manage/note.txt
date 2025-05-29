@@ -1,4 +1,4 @@
-Target SSH Server: ${SSH_TARGET_1_PUBLIC_IP}
-Username: ${CTF_USER}
+Target SSH Server: localhost
+Username: ctfuser
 SSH Key Filename: id_rsa
 Port: 2022

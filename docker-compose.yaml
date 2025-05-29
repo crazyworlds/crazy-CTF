@@ -8,6 +8,7 @@ services:
     networks:
       ctf-public:            # Connect to the public CTF network
         ipv4_address: ${WEB_EXTERNAL_IP} # Assign a static IP on the public network (from .env)
+      ctf-private:           # Also connect to the private CTF network
     ports:
       - "1080:80"
     restart: unless-stopped
