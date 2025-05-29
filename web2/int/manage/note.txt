@@ -1,0 +1,4 @@
+Target SSH Server: localhost
+Username: ctfuser
+SSH Key Filename: id_rsa
+Port: 2022

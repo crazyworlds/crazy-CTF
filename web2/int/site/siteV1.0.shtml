@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to EvilCorp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+ <!--   Applied Patch from http://localhost:2080/int/site/ , to minitor effect -->
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
+        <div class="mb-6">
+            <svg class="mx-auto h-24 w-auto text-red-500" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                <path d="M12 11.75a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5a.75.75 0 01.75-.75z"/>
+                <path d="M12 7a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75z"/>
+                <path d="M12 13.5a.75.75 0 01.75.75V15a.75.75 0 01-1.5 0v-.75a.75.75 0 01.75-.75z"/>
+                <path d="M12 10.25a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75z"/>
+            </svg>
+            <h2 class="text-3xl font-bold text-red-400 mt-2">EvilCorp</h2>
+        </div>
+
+        <h1 class="text-4xl font-extrabold text-white mb-4">Our new service now ar Online !!!!</h1>
+
+    </div>
+</body>
+</html>
