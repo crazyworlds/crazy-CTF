@@ -59,8 +59,6 @@ services:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
     privileged: true
-    ports:
-      - "2022:22"
     restart: unless-stopped
     read_only: true
     volumes:
