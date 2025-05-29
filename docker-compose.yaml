@@ -8,6 +8,7 @@ services:
     networks:
       ctf-public:            # Connect to the public CTF network
         ipv4_address: ${WEB_EXTERNAL_IP} # Assign a static IP on the public network (from .env)
+      ctf-private:           # Also connect to the private CTF network
     ports:
       - "1080:80"
     restart: unless-stopped
@@ -21,6 +22,9 @@ services:
         ipv4_address: ${WEB_INTERNAL_IP} # Assign a static IP on the public network (from .env)
         aliases:
           - internal.evilcorp.org # Allow name resolution within the public network
+      ctf-private:           # Also connect to the private CTF network
+        aliases:
+          - internal.evilcorp.org # Allow name resolution within the private network
     ports:
       - "2080:80"
     restart: unless-stopped
@@ -55,6 +59,8 @@ services:
       ctf-private:
         ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
     privileged: true
+#    ports:
+#      - "2022:22"
     restart: unless-stopped
     read_only: true
     volumes:
