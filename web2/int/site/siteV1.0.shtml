@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Benvenuti in Pincopallo EvilCorp</title>
+    <title>Welcome to EvilCorp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
     </style>
- <!--   /int/site/ applicata. Controllare gli effetti. -->
+ <!--   Applied Patch from http://localhost:2080/int/site/ , to minitor effect -->
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
     <div class="bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
@@ -25,9 +25,7 @@
             <h2 class="text-3xl font-bold text-red-400 mt-2">EvilCorp</h2>
         </div>
 
-        <h1 class="text-4xl font-extrabold text-white mb-4">Il nostro nuovo servizio è online!</h1>
-        <p class="text-lg text-gray-300 mb-6">Siamo lieti di annunciare il lancio del nostro ultimo servizio ultra-sicuro.</p>
-        <p class="text-md text-gray-400">Restate sintonizzati per ulteriori aggiornamenti.</p>
+        <h1 class="text-4xl font-extrabold text-white mb-4">Our new service now ar Online !!!!</h1>
 
     </div>
 </body>

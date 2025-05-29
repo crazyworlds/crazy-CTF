@@ -21,35 +21,35 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* && \
 RUN apt-get update
 
 # ******************************************************************
-# Installazione di Redis Server (versione vulnerabile a CVE-2022-0543)
+# Installazione di Redis Server (vulnerable server  CVE-2022-0543)
 # ******************************************************************
 # Clean up default sources.list from the base image to avoid conflicts
 RUN rm /etc/apt/sources.list
 
-# Aggiungi il repository Debian Snapshot per Bullseye da una data precedente alla patch
-# La patch per CVE-2022-0543 è stata rilasciata a marzo 2022 (Redis 6.0.16)
-# Usiamo una data di snapshot precedente, ad esempio febbraio 2022
-# La chiave è ora fornita da debian-archive-keyring
+# Add Debian Snapshot repository for Bullseye from a date before the patch
+# Patch for CVE-2022-0543 was released in March 2022 (Redis 6.0.16)
+# We use an older snapshot date, e.g. February 2022
+# The key is now provided by debian-archive-keyring
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://snapshot.debian.org/archive/debian/20220228T000000Z/ bullseye main" > /etc/apt/sources.list.d/snapshot.list
-# Aggiungi anche il repository standard di Bullseye per le dipendenze
+# Also add the standard Bullseye repository for dependencies
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list.d/debian.list
-# Corretto l'URL del repository di sicurezza
+# Fixed security repository URL
 RUN echo "deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] http://security.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list.d/debian.list
 
 
-# Pinna il pacchetto redis-server per favorire il repository snapshot, senza specificare la versione esatta
-# Questo permette ad apt di scegliere la versione più alta disponibile dal repository snapshot
+# Pin the redis-server package to favor the snapshot repository, without specifying the exact version
+# This allows apt to choose the highest version available from the snapshot repository
 RUN echo "Package: redis-server" > /etc/apt/preferences.d/redis-pin
 RUN echo "Pin: release a=bullseye, o=Debian, l=Debian, n=bullseye, c=main, v=20220228T000000Z" >> /etc/apt/preferences.d/redis-pin
 RUN echo "Pin-Priority: 900" >> /etc/apt/preferences.d/redis-pin
-# Aumenta la priorità del repository snapshot rispetto al default per Redis
+# Increase the priority of the snapshot repository from the default for Redis
 RUN echo "APT::Default-Release \"bullseye\";" >> /etc/apt/apt.conf.d/00local-release
 
-# Aggiorna i repository e installa redis-server
+# update  repository and install redis-server
 RUN apt-get update && \
     apt-get install -y --no-install-recommends redis-server
 
-# Verifica la versione di Redis installata (per debug)
+# verify installed redis version (for debug)
 RUN redis-server --version || true
 
 # Create the CTF user (read from environment variable)
@@ -75,7 +75,7 @@ RUN chmod 0755 /run/sshd
 
 # Configure SSH to accept only key authentication (disable password)
 RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-# Allow root login with key (useful for your debugging)
+# Allow root login with key (probably useful to game )
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # Set SSH session timeout to 1 minute (60 seconds of inactivity)
@@ -133,5 +133,5 @@ RUN chown root:root /root/flag1.txt
 # Expose necessary ports: 22 for SSH, 6379 for Redis
 EXPOSE 22 6379
 
-# Start SSH and Redis in background, ensuring SSH is the main foreground process
+# Start Redis in background and SSH in foreground as the main process
 CMD ["sh", "-c", "redis-server /etc/redis/redis.conf & exec /usr/sbin/sshd -D"]
