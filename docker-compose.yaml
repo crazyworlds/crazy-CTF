@@ -6,9 +6,7 @@ services:
       context: .
       dockerfile: ./web/Dockerfile
     networks:
-      ctf-public:            # Connect to the public CTF network
-        ipv4_address: ${WEB_EXTERNAL_IP} # Assign a static IP on the public network (from .env)
-      ctf-private:           # Also connect to the private CTF network
+      ctf-private:          
     ports:
       - "1080:80"
     restart: unless-stopped
@@ -18,13 +16,9 @@ services:
       context: .
       dockerfile: ./web2/Dockerfile
     networks:
-      ctf-public:            # Connect to the public CTF network
-        ipv4_address: ${WEB_INTERNAL_IP} # Assign a static IP on the public network (from .env)
+      ctf-private:          
         aliases:
-          - internal.evilcorp.org # Allow name resolution within the public network
-      ctf-private:           # Also connect to the private CTF network
-        aliases:
-          - internal.evilcorp.org # Allow name resolution within the private network
+          - internal.evilcorp.org 
     ports:
       - "2080:80"
     restart: unless-stopped
@@ -33,7 +27,7 @@ services:
     build:
       context: .
       dockerfile: ./ssh/Dockerfile
-      args: # <--- NUOVO: Passa gli argomenti di build al Dockerfile
+      args:
         CTF_USER_ARG: ${CTF_USER}
         FLAG_ONE_CONTENT_ARG: ${FLAG_ONE_CONTENT}
         SSH_TARGET_2_PRIVATE_IP_ARG: ${SSH_TARGET_2_PRIVATE_IP}
@@ -41,10 +35,8 @@ services:
       - "2222:22"           
       - "6379:6379"        
     networks:
-      ctf-public:
-        ipv4_address: ${SSH_TARGET_1_PUBLIC_IP} # Legge l'IP dal .env
       ctf-private:
-        ipv4_address: ${SSH_TARGET_1_PRIVATE_IP} # Legge l'IP dal .env
+        ipv4_address: ${SSH_TARGET_1_PRIVATE_IP} 
     restart: unless-stopped
 
   ssh2:
@@ -52,12 +44,12 @@ services:
     build:
       context: .
       dockerfile: ./ssh2/Dockerfile
-      args: # <--- NUOVO: Passa gli argomenti di build al Dockerfile
+      args: 
         CTF_USER_ARG: ${CTF_USER}
         FLAG_TWO_CONTENT_ARG: ${FLAG_TWO_CONTENT}
     networks:
       ctf-private:
-        ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} # Legge l'IP dal .env
+        ipv4_address: ${SSH_TARGET_2_PRIVATE_IP} 
     privileged: true
 #    ports:
 #      - "2022:22"
@@ -71,15 +63,8 @@ services:
       - /var/spool/cron:/var/spool/cron:rw
       - /dev/shm:/dev/shm:rw
 networks:
-  ctf-public:
-    driver: macvlan
-    driver_opts:
-          parent: wlo1             # Use a standard bridge network
-    ipam:
-      config:
-        - subnet: ${CTF_PUBLIC_SUBNET} # Define the subnet for the public Docker network (from .env)
   ctf-private:
     driver: bridge
     ipam:
       config:
-        - subnet: ${CTF_PRIVATE_SUBNET} # Define the subnet for the private Docker network (from .env)
+        - subnet: ${CTF_PRIVATE_SUBNET} 

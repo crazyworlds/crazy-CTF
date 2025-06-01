@@ -3,6 +3,7 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}=========================================${NC}"
@@ -46,6 +47,8 @@ fi
 # --- 4. Informazioni per l'accesso ---
 echo -e "\n${GREEN}=========================================${NC}"
 echo -e "${GREEN}        CTF Ready for Action!         ${NC}"
+echo -e "${GREEN}           Create By        ${NC}"
+echo -e "${CYAN}           The\`{razy         ${NC}"
 echo -e "${GREEN}=========================================${NC}"
 echo -e "\n${YELLOW}Entrypoint :${NC} http://localhost:1080"
 
