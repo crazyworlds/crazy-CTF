@@ -39,8 +39,6 @@ Once the script has completed the setup, the environment will be ready. Key acce
 
 Multi-Phase Challenges: A path starting with web reconnaissance, progressing to SSH server access, and culminating in complex privilege escalation techniques.
 
-Real Vulnerabilities: You will exploit known CVEs (e.g., Redis Arbitrary File Write (AFW)) and common misconfigurations (e.g., sudo mount --bind abuse).
-
 Advanced Networking: You will face segmented network scenarios that require pivoting and tunneling techniques.
 
 Isolated Environment: The entire infrastructure is managed via Docker Compose, ensuring an isolated, reproducible, and easy-to-start/reset environment.

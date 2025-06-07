@@ -46,6 +46,14 @@ RUN echo "unset HISTSIZE" >> /home/${CTF_USER}/.bashrc
 RUN chown ${CTF_USER}:${CTF_USER} /home/${CTF_USER}/.bashrc
 
 # ******************************************************************
+# SSH Configuration and Privilege Separation Directory
+# ******************************************************************
+# Create the privilege separation directory for SSH
+RUN mkdir -p /run/sshd
+RUN chmod 0755 /run/sshd
+
+
+# ******************************************************************
 # Final Flag
 # ******************************************************************
 
